@@ -39,12 +39,12 @@
 <script>
     // 1. تصفير الذاكرة تلقائياً عند فتح الصفحة
     window.onload = function() {
-        fetch('http://127.0.0.1:8000/reset', { method: 'POST' });
+        fetch('https://chatbot-rs9r.onrender.com/reset', { method: 'POST' });
     };
 
     // دالة زر التصفير
     async function resetChat() {
-        await fetch('http://127.0.0.1:8000/reset', { method: 'POST' });
+        await fetch('https://chatbot-rs9r.onrender.com/reset', { method: 'POST' });
         document.getElementById('chatBox').innerHTML = '<div class="message bot-msg">تم تصفير المحادثة! ابدأ من جديد 🚀</div>';
     }
 
@@ -59,7 +59,7 @@
         chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/chat', {
+            const response = await fetch('https://chatbot-rs9r.onrender.com/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: text })
