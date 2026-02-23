@@ -2,23 +2,25 @@ from pydantic import BaseModel
 import json
 
 # ==========================================
-# 1. قاعدة بيانات المنتجات (المخزون) 🎒
+# 1. قاعدة بيانات منتجات مكتبة البوادي 🏛️
+#
 # ==========================================
 products_db = {
-    "اقلام": [
-        {"id": 101, "name": "طقم أقلام يوني بول (أسود)", "price": 45, "stock": 20, "desc": "حبر سائل، 0.7 ملم، مضاد للماء", "category": "أقلام"},
-        {"id": 102, "name": "أقلام رصاص روكو (علبة)", "price": 12, "stock": 100, "desc": "HB كلاسيك، خشب عالي الجودة", "category": "أقلام"},
-        {"id": 103, "name": "أقلام تحديد هايلايتر (4 ألوان)", "price": 18, "stock": 0, "desc": "ألوان فاقعة باستيل، لا تجف بسرعة", "category": "أقلام"}
+    "فنية": [
+        {"id": 101, "name": "ألوان أكريليك Dandy (6 ألوان)", "price": 15, "stock": 50, "desc": "ألوان عالية الجودة مع فرشاة وباليتة صغيرة، مناسبة للرسم على الكانفس", "category": "فنية وأشغال يدوية"},
+        {"id": 102, "name": "بخاخ بوية إسباني (أخضر فالي)", "price": 39, "stock": 20, "desc": "400 مل، تغطية ممتازة وسريعة الجفاف للأعمال الفنية والديكور", "category": "فنية وأشغال يدوية"},
+        {"id": 103, "name": "طقم فرش رسم DANDY (9 فرش)", "price": 17, "stock": 15, "desc": "مقاسات متنوعة تناسب الألوان المائية والزيتية", "category": "فنية وأشغال يدوية"}
     ],
-    "دفاتر": [
-        {"id": 201, "name": "دفتر سلك A4 مسطر", "price": 25, "stock": 50, "desc": "غلاف مقوى، 200 ورقة، ورق 80 جرام", "category": "دفاتر"},
-        {"id": 202, "name": "كراسة رسم كانسون", "price": 35, "stock": 15, "desc": "ورق خشن للألوان المائية، A3", "category": "رسم"}
+    "مكتبية": [
+        {"id": 201, "name": "ورق تصوير روكو A4 (500 ورقة)", "price": 18, "stock": 200, "desc": "ورق أبيض ناصع 80 جرام، مثالي للطابعات وآلات التصوير", "category": "أدوات مكتبية"},
+        {"id": 202, "name": "آلة تغليف حراري DANDY A3", "price": 250, "stock": 5, "desc": "تغليف حراري للمستندات حتى مقاس A3، 4 رولات تسخين", "category": "إلكترونيات ومعدات"},
+        {"id": 203, "name": "فلاش ميموري SanDisk 64GB", "price": 35, "stock": 30, "desc": "سعة تخزين عالية، USB 3.0 لنقل البيانات بسرعة", "category": "إلكترونيات"}
     ],
-    "شنط": [
-        {"id": 301, "name": "شنطة ظهر أديداس", "price": 180, "stock": 5, "desc": "لون أسود، مناسبة للابتوب 15 إنش", "category": "شنط مدرسية"}
+    "مدرسية": [
+        {"id": 301, "name": "شنطة ظهر Best Life", "price": 43, "stock": 10, "desc": "شنطة عملية ومريحة للطلاب، جودة عالية", "category": "شنط مدرسية"},
+        {"id": 302, "name": "ألوان مائية Maped (12 لون)", "price": 13, "stock": 60, "desc": "ألوان زاهية وآمنة للأطفال، سهلة الغسل", "category": "أدوات مدرسية"}
     ]
 }
-
 # ==========================================
 # 2. قاعدة بيانات الطلبات (العملاء) 📦
 # ==========================================
@@ -49,42 +51,33 @@ orders_db = {
 # ==========================================
 # 3. دوال البحث (Logic) 🧠
 # ==========================================
-
-# دالة البحث عن منتج (ذكية تبحث في كل الأقسام)
+# دوال البحث (للتذكير، تأكد أنها موجودة)
 def search_product(query: str):
-    """تبحث عن منتج بالاسم وترجع تفاصيله"""
     results = []
-    query = query.lower() # توحيد البحث
-    
-    # نلف على كل الأقسام (أقلام، دفاتر، شنط...)
+    query = query.lower()
     for category, items in products_db.items():
         for item in items:
-            if query in item["name"].lower() or query in item["category"]:
-                # إضافة حالة التوفر
+            if query in item["name"].lower() or query in item["category"] or query in item["desc"]:
                 availability = "متوفر ✅" if item["stock"] > 0 else "نفدت الكمية ❌"
                 item_info = {
                     "المنتج": item["name"],
-                    "السعر": f"{item['price']} ريال",
+                    "السعر": f"{item['price']} ريال (شامل الضريبة)",
                     "الوصف": item["desc"],
-                    "حالة التوفر": availability
+                    "التوفر": availability
                 }
                 results.append(item_info)
-    
     if results:
         return json.dumps(results, ensure_ascii=False)
     else:
-        return json.dumps({"message": "للأسف ما حصلت منتج بهذا الاسم، جرب تبحث بكلمة عامة مثل 'قلم' أو 'دفتر'"}, ensure_ascii=False)
+        return json.dumps({"message": "عذراً، المنتج غير موجود حالياً. لدينا تشكيلة واسعة من الأدوات الفنية والمكتبية، جرب البحث بكلمة عامة."}, ensure_ascii=False)
 
-# دالة الاستعلام عن الطلب
 def get_order_status(phone_number: str):
-    """تجلب تفاصيل الطلب برقم الجوال"""
     phone = phone_number.replace(" ", "")
     order = orders_db.get(phone)
     if order:
         return json.dumps(order, ensure_ascii=False)
     else:
-        return json.dumps({"error": "رقم الجوال هذا غير مسجل في طلباتنا الحالية"}, ensure_ascii=False)
+        return json.dumps({"error": "رقم الجوال غير مسجل في طلبات المتجر الإلكتروني"}, ensure_ascii=False)
 
-# نموذج استقبال الرسائل (للسيرفر)
 class MessageInput(BaseModel):
     text: str
