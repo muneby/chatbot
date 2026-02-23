@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تجربة الموظف الذكي</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .chat-container { width: 350px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; height: 600px; position: relative; }
+        .header { background: #075e54; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .chat-box { flex: 1; padding: 15px; overflow-y: auto; background: #e5ddd5; }
+        .message { margin: 10px 0; padding: 10px 15px; border-radius: 10px; max-width: 80%; font-size: 14px; line-height: 1.4; }
+        .user-msg { background: #dcf8c6; align-self: flex-end; margin-right: auto; }
+        .bot-msg { background: white; align-self: flex-start; margin-left: auto; }
+        .input-area { padding: 10px; background: #f0f0f0; display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; outline: none; }
+        button { padding: 10px 20px; background: #075e54; color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        
+        /* زر إعادة التعيين */
+        .reset-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0 10px; }
+        .reset-btn:hover { color: #dcf8c6; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="header">
+        <span>مساعد متجر البوادي 🤖</span>
+        <button class="reset-btn" onclick="resetChat()" title="محادثة جديدة">🔄</button>
+    </div>
+    <div class="chat-box" id="chatBox">
+        <div class="message bot-msg">هلا بك! 👋 أنا المساعد الذكي، آمرني كيف أقدر أخدمك اليوم؟</div>
+    </div>
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="اكتب رسالتك هنا..." onkeypress="handleEnter(event)">
+        <button onclick="sendMessage()">إرسال</button>
+    </div>
+</div>
+
+<script>
+    // 1. تصفير الذاكرة تلقائياً عند فتح الصفحة
+    window.onload = function() {
+        fetch('http://127.0.0.1:8000/reset', { method: 'POST' });
+    };
+
+    // دالة زر التصفير
+    async function resetChat() {
+        await fetch('http://127.0.0.1:8000/reset', { method: 'POST' });
+        document.getElementById('chatBox').innerHTML = '<div class="message bot-msg">تم تصفير المحادثة! ابدأ من جديد 🚀</div>';
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('userInput');
+        const chatBox = document.getElementById('chatBox');
+        const text = input.value;
+        if (!text) return;
+
+        chatBox.innerHTML += `<div class="message user-msg" style="margin-right: 0; margin-left: auto;">${text}</div>`;
+        input.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            });
+            const data = await response.json();
+            
+            chatBox.innerHTML += `<div class="message bot-msg">${data.reply}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } catch (error) {
+            chatBox.innerHTML += `<div class="message bot-msg" style="color:red">تأكد أن السيرفر شغال!</div>`;
+        }
+    }
+
+    function handleEnter(e) { if (e.key === 'Enter') sendMessage(); }
+</script>
+
+</body>
+</html>
