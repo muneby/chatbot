@@ -54,23 +54,38 @@ orders_db = {
 # دوال البحث (للتذكير، تأكد أنها موجودة)
 def search_product(query: str):
     results = []
-    query = query.lower()
+    # 1. تنظيف النص وتقسيمه إلى كلمات
+    # مثال: "أدوات فنية" بتصير -> ["أدوات", "فنية"]
+    query_words = query.lower().split()
+    
     for category, items in products_db.items():
         for item in items:
-            if query in item["name"].lower() or query in item["category"] or query in item["desc"]:
+            # 2. نجمع كل نصوص المنتج في سطر واحد للبحث
+            item_content = f"{item['name']} {item['category']} {item['desc']}".lower()
+            
+            # 3. المنطق الذكي: هل توجد "أي" كلمة من بحث العميل داخل المنتج؟
+            # شرط (len > 2) عشان نتجاهل الحروف الصغيرة مثل "في" أو "من"
+            match = False
+            for word in query_words:
+                if len(word) > 2 and word in item_content:
+                    match = True
+                    break
+            
+            if match:
                 availability = "متوفر ✅" if item["stock"] > 0 else "نفدت الكمية ❌"
                 item_info = {
                     "المنتج": item["name"],
-                    "السعر": f"{item['price']} ريال (شامل الضريبة)",
+                    "السعر": f"{item['price']} ريال",
                     "الوصف": item["desc"],
                     "التوفر": availability
                 }
                 results.append(item_info)
+    
     if results:
         return json.dumps(results, ensure_ascii=False)
     else:
-        return json.dumps({"message": "عذراً، المنتج غير موجود حالياً. لدينا تشكيلة واسعة من الأدوات الفنية والمكتبية، جرب البحث بكلمة عامة."}, ensure_ascii=False)
-
+        # رسالة لطيفة في حال فعلاً ما لقينا شيء
+        return json.dumps({"message": "عذراً، ما حصلت منتج مطابق تماماً. جرب تبحث بكلمة واحدة مثل 'ألوان' أو 'ورق' أو 'شنطة'."}, ensure_ascii=False)
 def get_order_status(phone_number: str):
     phone = phone_number.replace(" ", "")
     order = orders_db.get(phone)
